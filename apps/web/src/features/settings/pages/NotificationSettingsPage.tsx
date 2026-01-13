@@ -140,8 +140,8 @@ export function NotificationSettingsPage() {
           </div>
         </div>
         {hasChanges && (
-          <Button onClick={handleSave} disabled={saveMutation.isLoading}>
-            {saveMutation.isLoading ? (
+          <Button onClick={handleSave} disabled={saveMutation.isPending}>
+            {saveMutation.isPending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Save className="h-4 w-4 mr-2" />

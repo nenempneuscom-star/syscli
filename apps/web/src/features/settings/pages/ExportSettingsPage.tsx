@@ -214,8 +214,8 @@ export function ExportSettingsPage() {
                     O processo pode levar alguns minutos dependendo da quantidade de dados.
                   </p>
                 </div>
-                <Button onClick={handleExport} disabled={exportMutation.isLoading}>
-                  {exportMutation.isLoading ? (
+                <Button onClick={handleExport} disabled={exportMutation.isPending}>
+                  {exportMutation.isPending ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
                     <FileDown className="h-4 w-4 mr-2" />

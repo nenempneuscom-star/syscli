@@ -342,9 +342,9 @@ export function TeamSettingsPage() {
             </Button>
             <Button
               onClick={confirmRoleChange}
-              disabled={updateRoleMutation.isLoading || selectedRole === selectedUser?.role}
+              disabled={updateRoleMutation.isPending || selectedRole === selectedUser?.role}
             >
-              {updateRoleMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {updateRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Confirmar
             </Button>
           </DialogFooter>

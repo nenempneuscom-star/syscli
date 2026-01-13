@@ -288,8 +288,8 @@ export function SecuritySettingsPage() {
               )}
             </div>
 
-            <Button type="submit" disabled={changePasswordMutation.isLoading}>
-              {changePasswordMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Button type="submit" disabled={changePasswordMutation.isPending}>
+              {changePasswordMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Alterar Senha
             </Button>
           </form>
@@ -339,7 +339,7 @@ export function SecuritySettingsPage() {
                 </AlertDescription>
               </Alert>
               <Button onClick={() => enableMFAMutation.mutate()}>
-                {enableMFAMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {enableMFAMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <Shield className="h-4 w-4 mr-2" />
                 Ativar MFA
               </Button>
@@ -447,9 +447,9 @@ export function SecuritySettingsPage() {
             <Button
               variant="destructive"
               onClick={() => disableMFAMutation.mutate(disableMFAPassword)}
-              disabled={!disableMFAPassword || disableMFAMutation.isLoading}
+              disabled={!disableMFAPassword || disableMFAMutation.isPending}
             >
-              {disableMFAMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {disableMFAMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Desativar MFA
             </Button>
           </DialogFooter>
