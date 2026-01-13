@@ -1,22 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
-  "globalEnv": [
-    "NODE_ENV",
-    "VITE_API_URL",
-    "VITE_SUPABASE_URL",
-    "VITE_SUPABASE_ANON_KEY"
-  ],
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": [
-        "NODE_ENV",
-        "VITE_API_URL",
-        "VITE_SUPABASE_URL",
-        "VITE_SUPABASE_ANON_KEY"
-      ]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+    },
+    "web#build": {
+      "dependsOn": ["^build"],
+      "env": ["VITE_API_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"],
+      "outputs": ["dist/**"]
     },
     "dev": {
       "cache": false,
