@@ -5,7 +5,7 @@ import { authGuard } from '../../common/guards/auth.guard.js';
 import { tenantGuard } from '../../common/guards/tenant.guard.js';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes require authentication
 router.use(authGuard, tenantGuard);

@@ -2,10 +2,21 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service.js';
 import { validateBody } from '../../common/middleware/validate.js';
 import { authGuard } from '../../common/guards/auth.guard.js';
-import { loginSchema, registerSchema, refreshTokenSchema } from '@healthflow/validators';
+import { loginSchema, refreshTokenSchema } from '@healthflow/validators';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
+
+const registerWithTenantSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().min(2),
+  confirmPassword: z.string(),
+  tenantId: z.string().uuid(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
 
 // POST /auth/login
 router.post(
@@ -27,7 +38,7 @@ router.post(
 // POST /auth/register
 router.post(
   '/register',
-  validateBody(registerSchema.extend({ tenantId: z.string().uuid() })),
+  validateBody(registerWithTenantSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { tenantId, ...input } = req.body;
@@ -100,7 +111,7 @@ router.post(
 );
 
 // POST /auth/logout
-router.post('/logout', authGuard, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/logout', authGuard, async (_req: Request, res: Response, next: NextFunction) => {
   try {
     // In a stateless JWT system, logout is handled client-side by deleting tokens
     // Here we just log the action for audit purposes

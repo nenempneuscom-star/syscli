@@ -6,7 +6,7 @@ import { createTenantSchema } from '@healthflow/validators';
 import { NotFoundException, ConflictException } from '../../common/exceptions/http-exception.js';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /tenants - List all tenants (Super Admin only)
 router.get(

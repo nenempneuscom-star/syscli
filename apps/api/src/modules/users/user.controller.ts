@@ -7,7 +7,7 @@ import { tenantGuard } from '../../common/guards/tenant.guard.js';
 import { createUserSchema, updateUserSchema, paginationSchema } from '@healthflow/validators';
 import { NotFoundException, ConflictException } from '../../common/exceptions/http-exception.js';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /users - List users in tenant
 router.get(
@@ -17,12 +17,13 @@ router.get(
   validateQuery(paginationSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { page, perPage, sortBy, sortOrder } = req.query as {
+      const query = req.query as unknown as {
         page: number;
         perPage: number;
         sortBy?: string;
         sortOrder: 'asc' | 'desc';
       };
+      const { page, perPage, sortBy, sortOrder } = query;
 
       const skip = (page - 1) * perPage;
 

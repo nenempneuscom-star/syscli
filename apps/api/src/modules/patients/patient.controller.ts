@@ -7,7 +7,7 @@ import { createPatientSchema, updatePatientSchema, paginationSchema } from '@hea
 import { NotFoundException, ConflictException } from '../../common/exceptions/http-exception.js';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /patients - List patients
 router.get(
@@ -21,13 +21,14 @@ router.get(
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { page, perPage, sortBy, sortOrder, search } = req.query as {
+      const query = req.query as unknown as {
         page: number;
         perPage: number;
         sortBy?: string;
         sortOrder: 'asc' | 'desc';
         search?: string;
       };
+      const { page, perPage, sortBy, sortOrder, search } = query;
 
       const skip = (page - 1) * perPage;
 

@@ -355,13 +355,13 @@ export class MedicalRecordService {
 
     // Combine and sort by date
     const timeline = [
-      ...records.map((r) => ({
+      ...records.map((r: { type: RecordType; createdAt: Date }) => ({
         type: 'medical_record' as const,
         subtype: r.type,
         date: r.createdAt,
         data: r,
       })),
-      ...appointments.map((a) => ({
+      ...appointments.map((a: { type: string; startTime: Date }) => ({
         type: 'appointment' as const,
         subtype: a.type,
         date: a.startTime,
@@ -372,7 +372,7 @@ export class MedicalRecordService {
     return timeline;
   }
 
-  async getTemplates(tenantId: string, type?: RecordType) {
+  async getTemplates(_tenantId: string, type?: RecordType) {
     // Return predefined templates for different record types
     const templates = {
       ANAMNESIS: {

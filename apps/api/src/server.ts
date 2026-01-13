@@ -24,7 +24,7 @@ import { inventoryRouter } from './modules/inventory/inventory.controller.js';
 import { reportsRouter } from './modules/reports/reports.controller.js';
 import { settingsRouter } from './modules/settings/settings.controller.js';
 
-const app = express();
+const app: express.Application = express();
 
 // Trust proxy (for rate limiting behind reverse proxy)
 app.set('trust proxy', 1);

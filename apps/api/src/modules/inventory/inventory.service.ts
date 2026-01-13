@@ -117,8 +117,8 @@ export class InventoryService {
         distinct: ['productId'],
       });
 
-      const expiringProductIds = new Set(productsWithExpiringBatches.map((p) => p.productId));
-      filteredProducts = products.filter((p) => expiringProductIds.has(p.id));
+      const expiringProductIds = new Set(productsWithExpiringBatches.map((p: { productId: string }) => p.productId));
+      filteredProducts = products.filter((p: { id: string }) => expiringProductIds.has(p.id));
     }
 
     return {
@@ -430,7 +430,7 @@ export class InventoryService {
     }
 
     // Subtract OUT movements (simplified - in production would track by batch)
-    let totalOut = outMovements.reduce((sum, m) => sum + m.quantity, 0);
+    let totalOut = outMovements.reduce((sum: number, m: { quantity: number }) => sum + m.quantity, 0);
     const batches = Array.from(batchMap.values()).sort((a, b) => {
       if (!a.expirationDate) return 1;
       if (!b.expirationDate) return -1;
@@ -458,7 +458,7 @@ export class InventoryService {
     });
 
     // Manual filter since Prisma doesn't support comparing two fields directly
-    return products.filter((p) => p.currentStock <= p.minStock);
+    return products.filter((p: { currentStock: number; minStock: number }) => p.currentStock <= p.minStock);
   }
 
   async getExpiringProducts(tenantId: string, days: number = 30) {
@@ -516,7 +516,7 @@ export class InventoryService {
   async getInventorySummary(tenantId: string) {
     const [
       totalProducts,
-      lowStockCount,
+      _lowStockCount,
       totalValue,
       categoryCounts,
     ] = await Promise.all([
@@ -552,7 +552,7 @@ export class InventoryService {
       totalItems: totalValue._sum.currentStock || 0,
       lowStockCount: lowStockProducts.length,
       expiringSoonCount: expiringProducts.length,
-      byCategory: categoryCounts.map((c) => ({
+      byCategory: categoryCounts.map((c: { category: string; _count: number; _sum: { currentStock: number | null } }) => ({
         category: c.category,
         count: c._count,
         totalStock: c._sum.currentStock || 0,

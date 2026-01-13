@@ -7,7 +7,7 @@ import { createAppointmentSchema, updateAppointmentSchema, paginationSchema } fr
 import { NotFoundException, ConflictException, BadRequestException } from '../../common/exceptions/http-exception.js';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // GET /appointments - List appointments
 router.get(
@@ -25,7 +25,7 @@ router.get(
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { page, perPage, professionalId, patientId, status, startDate, endDate } = req.query as {
+      const query = req.query as unknown as {
         page: number;
         perPage: number;
         professionalId?: string;
@@ -34,6 +34,7 @@ router.get(
         startDate?: string;
         endDate?: string;
       };
+      const { page, perPage, professionalId, patientId, status, startDate, endDate } = query;
 
       const skip = (page - 1) * perPage;
 
@@ -478,7 +479,7 @@ router.get(
         data: {
           date,
           professionalId,
-          busySlots: appointments.map((a) => ({
+          busySlots: appointments.map((a: { startTime: Date; endTime: Date }) => ({
             start: a.startTime,
             end: a.endTime,
           })),

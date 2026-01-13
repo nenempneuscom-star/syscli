@@ -1,4 +1,3 @@
-import { prisma } from '../../infrastructure/database/prisma.js';
 import { NotFoundException } from '../../common/exceptions/http-exception.js';
 
 // Common medical procedures (TUSS - Terminologia Unificada da Saude Suplementar)

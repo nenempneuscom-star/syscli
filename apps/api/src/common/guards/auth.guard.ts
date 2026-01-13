@@ -130,3 +130,4 @@ export const receptionistGuard = rolesGuard(
   'RECEPTIONIST'
 );
 export const billingGuard = rolesGuard('SUPER_ADMIN', 'TENANT_ADMIN', 'BILLING_ADMIN');
+export const adminGuard = rolesGuard('SUPER_ADMIN', 'TENANT_ADMIN');

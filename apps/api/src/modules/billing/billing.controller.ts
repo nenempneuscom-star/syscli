@@ -6,7 +6,7 @@ import { tenantGuard } from '../../common/guards/tenant.guard.js';
 import { paginationSchema, paymentStatusSchema, paymentMethodSchema } from '@healthflow/validators';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes require authentication and tenant context
 router.use(authGuard, tenantGuard);

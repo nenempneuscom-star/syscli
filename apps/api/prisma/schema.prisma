@@ -164,6 +164,7 @@ model User {
   appointments       Appointment[]    @relation("ProfessionalAppointments")
   medicalRecords     MedicalRecord[]
   createdPatients    Patient[]        @relation("PatientCreator")
+  inventoryMovements InventoryMovement[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -327,30 +328,61 @@ model Invoice {
 // ==========================================
 
 model InventoryItem {
-  id             String    @id @default(uuid())
-  tenantId       String
-  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  name           String
-  description    String?
-  sku            String
-  category       String
-  unit           String
-  quantity       Int       @default(0)
-  minQuantity    Int       @default(0)
-  costPrice      Decimal   @db.Decimal(10, 2)
-  salePrice      Decimal?  @db.Decimal(10, 2)
-  supplier       String?
-  location       String?
-  expirationDate DateTime?
-  batchNumber    String?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id              String    @id @default(uuid())
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  sku             String
+  barcode         String?
+  category        String
+  unit            String
+  currentStock    Int       @default(0)
+  minStock        Int       @default(0)
+  maxStock        Int?
+  costPrice       Decimal?  @db.Decimal(10, 2)
+  salePrice       Decimal?  @db.Decimal(10, 2)
+  manufacturer    String?
+  supplier        String?
+  location        String?
+  requiresPrescription  Boolean @default(false)
+  controlledSubstance   Boolean @default(false)
+  anvisaRegistry  String?
+  expirationAlertDays Int @default(30)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  movements       InventoryMovement[]
 
   @@unique([tenantId, sku])
+  @@unique([tenantId, barcode])
   @@index([tenantId])
   @@index([tenantId, category])
-  @@index([expirationDate])
+}
+
+model InventoryMovement {
+  id              String    @id @default(uuid())
+  tenantId        String
+  productId       String
+  product         InventoryItem @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  type            String    // IN, OUT, ADJUSTMENT, EXPIRED, TRANSFER
+  quantity        Int
+  unitCost        Decimal?  @db.Decimal(10, 2)
+  batchNumber     String?
+  expirationDate  DateTime?
+  reason          String?
+  referenceId     String?
+  referenceType   String?
+  previousStock   Int
+  newStock        Int
+  createdAt       DateTime  @default(now())
+
+  @@index([tenantId, productId])
+  @@index([tenantId, type])
+  @@index([createdAt])
 }
 
 // ==========================================

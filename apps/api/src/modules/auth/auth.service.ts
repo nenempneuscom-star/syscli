@@ -25,11 +25,11 @@ export class AuthService {
   private generateTokens(payload: TokenPayload): AuthTokens {
     const accessToken = jwt.sign(payload, config.jwt.secret, {
       expiresIn: config.jwt.expiresIn,
-    });
+    } as jwt.SignOptions);
 
     const refreshToken = jwt.sign({ sub: payload.sub }, config.jwt.refreshSecret, {
       expiresIn: config.jwt.refreshExpiresIn,
-    });
+    } as jwt.SignOptions);
 
     // Calculate expiration in seconds
     const decoded = jwt.decode(accessToken) as { exp: number };

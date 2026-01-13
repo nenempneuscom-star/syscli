@@ -5,7 +5,7 @@ import { tenantGuard } from '../../common/guards/tenant.guard.js';
 import { validateBody, validateQuery } from '../../common/middleware/validate.js';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 
 // ==================== SCHEMAS ====================
 

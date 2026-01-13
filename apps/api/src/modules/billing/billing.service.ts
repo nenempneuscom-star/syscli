@@ -2,7 +2,6 @@ import { prisma } from '../../infrastructure/database/prisma.js';
 import {
   NotFoundException,
   BadRequestException,
-  ConflictException,
 } from '../../common/exceptions/http-exception.js';
 import { createChildLogger } from '../../infrastructure/logging/logger.js';
 import type { PaymentStatus, PaymentMethod, PaginationQuery } from '@healthflow/shared-types';
@@ -452,7 +451,7 @@ export class BillingService {
       revenue: {
         total: Number(revenueData._sum.total || 0),
         pending: Number(pendingData._sum.total || 0),
-        byPaymentMethod: revenueByMethod.map((r) => ({
+        byPaymentMethod: revenueByMethod.map((r: { paymentMethod: PaymentMethod | null; _sum: { total: unknown }; _count: number }) => ({
           method: r.paymentMethod,
           total: Number(r._sum.total || 0),
           count: r._count,
@@ -520,7 +519,7 @@ export class BillingService {
       date,
       totalRevenue: Number(totalRevenue._sum.total || 0),
       invoiceCount: invoices.length,
-      byPaymentMethod: byMethod.map((r) => ({
+      byPaymentMethod: byMethod.map((r: { paymentMethod: PaymentMethod | null; _sum: { total: unknown }; _count: number }) => ({
         method: r.paymentMethod,
         total: Number(r._sum.total || 0),
         count: r._count,
