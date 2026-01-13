@@ -1,0 +1,376 @@
+// Guilherme Machado Systems - Prisma Schema
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  TRIAL
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  DOCTOR
+  NURSE
+  RECEPTIONIST
+  BILLING_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum RecordType {
+  ANAMNESIS
+  EVOLUTION
+  PRESCRIPTION
+  EXAM_REQUEST
+  CERTIFICATE
+  REFERRAL
+}
+
+enum AppointmentType {
+  CONSULTATION
+  RETURN
+  PROCEDURE
+  EXAM
+  TELEMEDICINE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  BANK_TRANSFER
+  HEALTH_PLAN
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+}
+
+// ==========================================
+// PLANS & TENANTS
+// ==========================================
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  features    Json
+  maxUsers    Int      @default(5)
+  maxPatients Int      @default(1000)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenants Tenant[]
+}
+
+model Tenant {
+  id        String       @id @default(uuid())
+  name      String
+  document  String       @unique // CNPJ
+  subdomain String       @unique
+  settings  Json         @default("{}")
+  planId    String
+  plan      Plan         @relation(fields: [planId], references: [id])
+  status    TenantStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  // Relations
+  users          User[]
+  patients       Patient[]
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
+  invoices       Invoice[]
+  inventoryItems InventoryItem[]
+  rooms          Room[]
+  auditLogs      AuditLog[]
+
+  @@index([subdomain])
+  @@index([status])
+}
+
+// ==========================================
+// USERS
+// ==========================================
+
+model User {
+  id             String   @id @default(uuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email          String
+  passwordHash   String
+  name           String
+  role           UserRole
+  professionalId String?  // CRM, CRO, etc.
+  specialties    String[] @default([])
+  phone          String?
+  avatar         String?
+  isActive       Boolean  @default(true)
+  mfaEnabled     Boolean  @default(false)
+  mfaSecret      String?
+  lastLoginAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  appointments       Appointment[]    @relation("ProfessionalAppointments")
+  medicalRecords     MedicalRecord[]
+  createdPatients    Patient[]        @relation("PatientCreator")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([role])
+}
+
+// ==========================================
+// PATIENTS
+// ==========================================
+
+model Patient {
+  id               String    @id @default(uuid())
+  tenantId         String
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fullName         String
+  document         String    // CPF (encrypted)
+  birthDate        DateTime
+  gender           Gender
+  phone            String?
+  email            String?
+  address          Json?
+  healthPlan       String?
+  healthPlanNumber String?
+  emergencyContact Json?
+  allergies        String[]  @default([])
+  bloodType        String?
+  observations     String?
+  consentGiven     Boolean   @default(false)
+  consentDate      DateTime?
+  isActive         Boolean   @default(true)
+  createdById      String?
+  createdBy        User?     @relation("PatientCreator", fields: [createdById], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
+  invoices       Invoice[]
+
+  @@unique([tenantId, document])
+  @@index([tenantId])
+  @@index([tenantId, fullName])
+}
+
+// ==========================================
+// MEDICAL RECORDS
+// ==========================================
+
+model MedicalRecord {
+  id             String     @id @default(uuid())
+  tenantId       String
+  tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patientId      String
+  patient        Patient    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   User       @relation(fields: [professionalId], references: [id])
+  appointmentId  String?
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id])
+  type           RecordType
+  content        Json
+  icdCodes       String[]   @default([])
+  attachments    String[]   @default([])
+  signature      String?    // Digital signature
+  version        Int        @default(1)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([tenantId, patientId])
+  @@index([tenantId, professionalId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// APPOINTMENTS
+// ==========================================
+
+model Room {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  tenantId       String
+  tenant         Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patientId      String
+  patient        Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   User              @relation("ProfessionalAppointments", fields: [professionalId], references: [id])
+  roomId         String?
+  room           Room?             @relation(fields: [roomId], references: [id])
+  startTime      DateTime
+  endTime        DateTime
+  type           AppointmentType
+  status         AppointmentStatus @default(SCHEDULED)
+  notes          String?
+  cancellationReason String?
+  confirmedAt    DateTime?
+  checkedInAt    DateTime?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Relations
+  medicalRecords MedicalRecord[]
+  invoices       Invoice[]
+
+  @@index([tenantId, professionalId, startTime])
+  @@index([tenantId, patientId])
+  @@index([tenantId, status])
+  @@index([startTime])
+}
+
+// ==========================================
+// BILLING
+// ==========================================
+
+model Invoice {
+  id              String        @id @default(uuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patientId       String
+  patient         Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId   String?
+  appointment     Appointment?  @relation(fields: [appointmentId], references: [id])
+  invoiceNumber   String
+  items           Json
+  subtotal        Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  status          PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod?
+  healthPlanInfo  Json?
+  dueDate         DateTime
+  paidAt          DateTime?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId, patientId])
+  @@index([tenantId, status])
+  @@index([dueDate])
+}
+
+// ==========================================
+// INVENTORY
+// ==========================================
+
+model InventoryItem {
+  id             String    @id @default(uuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  sku            String
+  category       String
+  unit           String
+  quantity       Int       @default(0)
+  minQuantity    Int       @default(0)
+  costPrice      Decimal   @db.Decimal(10, 2)
+  salePrice      Decimal?  @db.Decimal(10, 2)
+  supplier       String?
+  location       String?
+  expirationDate DateTime?
+  batchNumber    String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, sku])
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@index([expirationDate])
+}
+
+// ==========================================
+// AUDIT LOG
+// ==========================================
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  tenantId   String
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId     String
+  action     AuditAction
+  resource   String
+  resourceId String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String
+  userAgent  String
+  createdAt  DateTime    @default(now())
+
+  @@index([tenantId, userId])
+  @@index([tenantId, resource])
+  @@index([createdAt])
+}
