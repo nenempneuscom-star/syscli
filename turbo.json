@@ -7,7 +7,7 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
-    "web#build": {
+    "@healthflow/web#build": {
       "dependsOn": ["^build"],
       "env": ["VITE_API_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"],
       "outputs": ["dist/**"]
