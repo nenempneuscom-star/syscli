@@ -21,6 +21,8 @@
     "@healthflow/validators": "workspace:*",
     "@healthflow/utils": "workspace:*",
     "@prisma/client": "^5.7.0",
+    "prisma": "^5.7.0",
+    "typescript": "^5.3.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.0.0",
     "compression": "^1.7.4",
@@ -46,9 +48,7 @@
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.0",
     "@types/uuid": "^9.0.7",
-    "prisma": "^5.7.0",
     "tsx": "^4.6.0",
-    "typescript": "^5.3.0",
     "vitest": "^1.0.0"
   }
 }
