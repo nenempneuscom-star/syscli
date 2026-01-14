@@ -199,7 +199,7 @@ export class MedicalRecordService {
         professionalId,
         appointmentId,
         type,
-        content,
+        content: content as any,
         icdCodes,
         attachments,
       },
@@ -265,7 +265,9 @@ export class MedicalRecordService {
     const record = await prisma.medicalRecord.update({
       where: { id },
       data: {
-        ...input,
+        ...(input.content ? { content: input.content as any } : {}),
+        ...(input.icdCodes ? { icdCodes: input.icdCodes } : {}),
+        ...(input.attachments ? { attachments: input.attachments } : {}),
         version: { increment: 1 },
       },
       include: {

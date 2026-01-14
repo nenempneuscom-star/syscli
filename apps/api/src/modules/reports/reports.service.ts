@@ -209,7 +209,7 @@ export class ReportsService {
         professional: {
           select: { id: true, name: true },
         },
-        invoice: {
+        invoices: {
           select: { total: true },
         },
       },
@@ -236,8 +236,8 @@ export class ReportsService {
         revenue: 0,
       };
       existing.count++;
-      if (a.invoice) {
-        existing.revenue += Number(a.invoice.total);
+      if (a.invoices && a.invoices.length > 0) {
+        existing.revenue += Number(a.invoices[0].total);
       }
       professionalStats.set(a.professionalId, existing);
     });
@@ -489,7 +489,7 @@ export class ReportsService {
             startTime: { gte: start, lte: end },
           },
           include: {
-            invoice: {
+            invoices: {
               select: { total: true, status: true },
             },
           },
@@ -499,8 +499,9 @@ export class ReportsService {
 
         // Calculate revenue
         const revenue = appointments.reduce((sum, a) => {
-          if (a.invoice?.status === 'PAID') {
-            return sum + Number(a.invoice.total);
+          const invoice = a.invoices && a.invoices.length > 0 ? a.invoices[0] : null;
+          if (invoice?.status === 'PAID') {
+            return sum + Number(invoice.total);
           }
           return sum;
         }, 0);
